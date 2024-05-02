@@ -19,3 +19,8 @@ async def check_user(user_id):
         return True
     else:
         return False
+
+async def update_location(user_id, longitude, latitude):
+    cursor.execute("UPDATE users SET longitude = ?, latitude = ? WHERE user_id = ?",
+                   (longitude, latitude, user_id))
+    connect.commit()

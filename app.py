@@ -18,6 +18,7 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 
 class MyStatesGroup(StatesGroup):
     phone_number =State()
+    location = State()
 
 
 
@@ -26,7 +27,7 @@ async def start(message: types.Message):
     user_id = message.from_user.id
     result = await check_user(user_id)
 
-    if result == True:
+    if result == False:
         await message.answer('Assalomu Aleykum Evos Dastavka Botiga Xush kelibsiz')
     else:
         await message.answer("Salom Evos Dastavka botiga hush kelibisiz \n Ro'yxatdan otish uchun ttelefon raqamingizni jonating", reply_markup=keyboard)
@@ -35,11 +36,26 @@ async def start(message: types.Message):
 
 @dp.message_handler(content_types=types.ContentTypes.CONTACT, state=MyStatesGroup.phone_number)
 async def contact(message: types.Message, state: FSMContext):
-    user_id = message.from_user
+    user_id = message.from_user.id
     contact= message.contact
     await add_user(user_id, int(contact.phone_number[5::1]))
-    await message.answer("Raqamingiz qabul qilindi ")
+    await message.answer(f"{message.from_user.first_name} - Raqamingiz qabul qilindi📞\n ")
     await state.finish()
+    await message.answer("<b>Locatsiyangizni jonating</b> 📍", reply_markup=location_kb)
+    await MyStatesGroup.location.set()
+
+
+
+
+@dp.message_handler(content_types=types.ContentTypes.LOCATION, state=MyStatesGroup.location)
+async def location(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    longitude = message.location.longitude
+    latitude = message.location.latitude
+    await update_location(user_id,longitude, latitude )
+    await state.finish()
+    await message.answer("Siz royxatdan otdingiz!) \n\n ")
+
 
 
 
