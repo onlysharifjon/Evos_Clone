@@ -11,7 +11,7 @@ from database import *
 from keyboards.default import *
 
 logging.basicConfig(level=logging.INFO)
-API_TOKEN = "6836477622:AAG7yRCuh9OvfcydpbgOy7urLxJoPBX9sW8"
+API_TOKEN = "Your_bot_TOKEN"
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
