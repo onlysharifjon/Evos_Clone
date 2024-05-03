@@ -10,6 +10,7 @@ from aiogram.types import Contact
 from database import *
 from keyboards.default import *
 from keyboards.default import menu_2
+from database import cursor
 
 logging.basicConfig(level=logging.INFO)
 API_TOKEN = "6836477622:AAG7yRCuh9OvfcydpbgOy7urLxJoPBX9sW8"
@@ -53,10 +54,22 @@ async def location(message: types.Message, state: FSMContext):
     await message.answer("Siz royxatdan otdingiz!) \n\n ")
 
 
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+
+
 @dp.message_handler(content_types=types.ContentTypes.TEXT)
 async def text(message:types.Message):
     if message.text == "🍴Menyu":
         await message.answer("Tanlang:", reply_markup=menu_2)
+    elif message.text == "Setlar":
+        get = cursor.execute('SELECT name FROM products').fetchall()
+        print(get)
+
+        get_button = ReplyKeyboardMarkup(resize_keyboard=True)
+
+        for i in get:
+            get_button.add(KeyboardButton(text=f"{i[0]}"))
+        await message.answer('setlar', reply_markup=get_button)
 
 
 

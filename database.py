@@ -34,10 +34,11 @@ async def part_menyu(category):
     connect.commit()
 
 
-def add_product(img, name, price, category):
+async def add_product(img, name, price, category):
     cursor.execute('INSERT INTO products VALUES(?,?,?,?)',(img,name,price,category))
 
     connect.commit()
 
-add_product(img='uploads/set_3.jpg',name="Iftar kofte grill mol go'shtidan", price=30000, category="Setlar")
+
+
 
