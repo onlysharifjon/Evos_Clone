@@ -56,7 +56,7 @@ async def location(message: types.Message, state: FSMContext):
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-#
+
 @dp.message_handler(content_types=types.ContentTypes.TEXT)
 async def text(message:types.Message):
     if message.text == "🍴Menyu":
