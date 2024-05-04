@@ -1,6 +1,6 @@
 from aiogram import types, Bot, Dispatcher, executor
 import logging
-from state.states import UserStates
+from state.states import UserStates, ProductStates
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -24,7 +24,7 @@ async def start(message: types.Message):
     result = await check_user(user_id)
 
     if result is True:
-        await message.answer('Assalomu Aleykum Evos Dastavka Botiga Xush kelibsiz',reply_markup=main_menu)
+        await message.answer('Assalomu Aleykum Evos Dastavka Botiga Xush kelibsiz', reply_markup=main_menu)
 
     else:
         await message.answer(
@@ -58,7 +58,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 
 @dp.message_handler(content_types=types.ContentTypes.TEXT)
-async def text(message:types.Message):
+async def text(message: types.Message):
     if message.text == "🍴Menyu":
         await message.answer("Tanlang:", reply_markup=menu_2)
     elif message.text == "Setlar":
@@ -67,11 +67,38 @@ async def text(message:types.Message):
 
         get_button = ReplyKeyboardMarkup(resize_keyboard=True)
 
-        for i in get:
-            get_button.add(KeyboardButton(text=f"{i[0]}"))
+        buttons_per_row = 2
+        current_row = []
+        for i, product in enumerate(get, start=1):
+            current_row.append(KeyboardButton(text=f"{product[0]}"))
+            if i % buttons_per_row == 0 or i == len(get):
+                get_button.row(*current_row)
+                current_row = []
         await message.answer('setlar', reply_markup=get_button)
+        await ProductStates.product.set()
 
 
+@dp.message_handler(content_types=types.ContentTypes.TEXT, state=ProductStates.product)
+async def text(message: types.Message, state: FSMContext):
+    global i
+
+    print(True)
+
+    get = cursor.execute('SELECT * FROM products WHERE name=?', (message.text,)).fetchall()
+
+
+    for i in get:
+        print(i)
+
+
+    image = i[0]
+    name = i[1]
+    price = i[2]
+    category = i[3]
+
+
+    await bot.send_photo(message.chat.id, open(image, 'rb'),
+                         caption=f"<b>{name}</b> \n\n💸narxi - <i>{price}so'm</i> \n\n\n{category} Bo'limidan")
 
 
 if __name__ == '__main__':
