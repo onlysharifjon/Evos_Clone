@@ -135,6 +135,25 @@ async def inline_button(call: CallbackQuery, state: FSMContext):
         )
         await bot.edit_message_reply_markup(chat_id=call.message.chat.id,reply_markup=product_inline,message_id=call.message.message_id)
 
+    elif call.data == 'minus':
+        cursor.execute('UPDATE counts SET count=count - 1 WHERE user_id=?', (call.message.chat.id,))
+        connect.commit()
+        soni = cursor.execute('SELECT * FROM counts WHERE user_id=?', (call.message.chat.id,)).fetchall()[0][2]
+        product_inline = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="-", callback_data="minus"),
+                    InlineKeyboardButton(text=f"{soni}", callback_data="default"),
+                    InlineKeyboardButton(text="+", callback_data="plus"),
+                ],
+                [
+                    InlineKeyboardButton(text="Savatchaga qo'shish📥", callback_data="karzinka"),
+                ]
+            ],
+        )
+        await bot.edit_message_reply_markup(chat_id=call.message.chat.id, reply_markup=product_inline,
+                                            message_id=call.message.message_id)
+
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
