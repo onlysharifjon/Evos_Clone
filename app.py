@@ -135,6 +135,12 @@ async def inline_button(call: CallbackQuery, state: FSMContext):
         )
         await bot.edit_message_reply_markup(chat_id=call.message.chat.id,reply_markup=product_inline,message_id=call.message.message_id)
 
+
+
+
+
+
+
     elif call.data == 'minus':
         cursor.execute('UPDATE counts SET count=count - 1 WHERE user_id=?', (call.message.chat.id,))
         connect.commit()
