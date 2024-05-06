@@ -69,6 +69,10 @@ menu_2 = ReplyKeyboardMarkup(
         ],
         [
             KeyboardButton(text="Garnirlar")
+        ],
+        [
+            KeyboardButton(text="Orqaga🔙")
         ]
     ]
 )
+

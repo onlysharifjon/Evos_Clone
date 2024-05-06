@@ -2,7 +2,7 @@ from aiogram import types, Bot, Dispatcher, executor
 import logging
 from state.states import UserStates, ProductStates
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.dispatcher import FSMContext
+
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from aiogram.types import Contact
@@ -11,6 +11,7 @@ from database import *
 from keyboards.default import *
 from keyboards.default import menu_2
 from database import cursor
+
 
 logging.basicConfig(level=logging.INFO)
 API_TOKEN = "6836477622:AAG7yRCuh9OvfcydpbgOy7urLxJoPBX9sW8"
@@ -61,11 +62,14 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 async def text(message: types.Message):
     if message.text == "🍴Menyu":
         await message.answer("Tanlang:", reply_markup=menu_2)
+    elif message.text == "Orqaga🔙":
+        await message.answer("Siz asosiy menudasiz  :", reply_markup=main_menu)
     elif message.text == "Setlar":
         get = cursor.execute('SELECT name FROM products').fetchall()
         print(get)
 
-        get_button = ReplyKeyboardMarkup(resize_keyboard=True)
+        get_button = ReplyKeyboardMarkup(
+        )
 
         buttons_per_row = 2
         current_row = []
@@ -99,6 +103,7 @@ async def text(message: types.Message, state: FSMContext):
 
     await bot.send_photo(message.chat.id, open(image, 'rb'),
                          caption=f"<b>{name}</b> \n\n💸narxi - <i>{price}so'm</i> \n\n\n{category} Bo'limidan")
+    await state.finish()
 
 
 if __name__ == '__main__':
