@@ -40,5 +40,16 @@ async def add_product(img, name, price, category):
     connect.commit()
 
 
+cursor.execute('CREATE TABLE IF NOT EXISTS counts (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER UNIQUE,count INTEGER)')
 
-
+async def check_count(user_id):
+    print(True)
+    a = cursor.execute('SELECT * FROM counts WHERE user_id = ?', (user_id,)).fetchall()
+    print(a)
+    d = []
+    if a == d:
+        cursor.execute('INSERT INTO counts(user_id, count) VALUES(?,?)', (user_id,0))
+        connect.commit()
+    else:
+        cursor.execute('UPDATE counts SET count = 0 WHERE user_id = ?', (user_id,))
+        connect.commit()

@@ -2,16 +2,16 @@ from aiogram import types, Bot, Dispatcher, executor
 import logging
 from state.states import UserStates, ProductStates
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-
+from aiogram.dispatcher.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from aiogram.types import Contact
+from aiogram.types import Contact, CallbackQuery
 
 from database import *
 from keyboards.default import *
 from keyboards.default import menu_2
 from database import cursor
-
+from keyboards.inline import *
 
 logging.basicConfig(level=logging.INFO)
 API_TOKEN = "6836477622:AAG7yRCuh9OvfcydpbgOy7urLxJoPBX9sW8"
@@ -85,25 +85,55 @@ async def text(message: types.Message):
 @dp.message_handler(content_types=types.ContentTypes.TEXT, state=ProductStates.product)
 async def text(message: types.Message, state: FSMContext):
     global i
+    await check_count(message.from_user.id)
 
-    print(True)
+    print(False)
 
     get = cursor.execute('SELECT * FROM products WHERE name=?', (message.text,)).fetchall()
 
-
     for i in get:
         print(i)
-
 
     image = i[0]
     name = i[1]
     price = i[2]
     category = i[3]
 
-
     await bot.send_photo(message.chat.id, open(image, 'rb'),
-                         caption=f"<b>{name}</b> \n\n💸narxi - <i>{price}so'm</i> \n\n\n{category} Bo'limidan")
-    await state.finish()
+                         caption=f"<b>{name}</b> \n\n💸narxi - <i>{price}so'm</i> \n\n\n{category} Bo'limidan",
+                         reply_markup=product_inline)
+
+    # async def update_pluster(message: types.Message):
+    #     pass
+    # async def update_minuser(message: types.Message):
+    #     pass
+
+
+@dp.callback_query_handler(state=ProductStates.product)
+async def inline_button(call: CallbackQuery, state: FSMContext):
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+
+
+
+
+    if call.data == 'plus':
+        cursor.execute('UPDATE counts SET count=count + 1 WHERE user_id=?', (call.message.chat.id,))
+        connect.commit()
+        soni = cursor.execute('SELECT * FROM counts WHERE user_id=?', (call.message.chat.id,)).fetchall()[0][2]
+        product_inline = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="-", callback_data="minus"),
+                    InlineKeyboardButton(text=f"{soni}", callback_data="default"),
+                    InlineKeyboardButton(text="+", callback_data="plus"),
+                ],
+                [
+                    InlineKeyboardButton(text="Savatchaga qo'shish📥", callback_data="karzinka"),
+                ]
+            ],
+        )
+        await bot.edit_message_reply_markup(chat_id=call.message.chat.id,reply_markup=product_inline,message_id=call.message.message_id)
 
 
 if __name__ == '__main__':
