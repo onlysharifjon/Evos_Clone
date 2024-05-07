@@ -34,7 +34,7 @@ main_menu = ReplyKeyboardMarkup(
             KeyboardButton(text="📋 Mening buyurtmalarim")
         ],
         [
-            KeyboardButton(text="📥 Savat"),
+            KeyboardButton(text="Savat"),
             KeyboardButton(text="📞 Aloqa")
         ],
         [

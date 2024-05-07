@@ -58,41 +58,66 @@ async def location(message: types.Message, state: FSMContext):
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 
-@dp.message_handler(content_types=types.ContentTypes.TEXT)
-async def text(message: types.Message):
-    if message.text == "🍴Menyu":
-        await message.answer("Tanlang:", reply_markup=menu_2)
-    elif message.text == "Orqaga🔙":
-        await message.answer("Siz asosiy menudasiz  :", reply_markup=main_menu)
-    elif message.text == "Setlar":
-        get = cursor.execute('SELECT name FROM products').fetchall()
-        print(get)
+@dp.message_handler(text="🍴Menyu")
+async def meni(message: types.Message):
+    await message.answer("Tanlang:", reply_markup=menu_2)
 
-        get_button = ReplyKeyboardMarkup(
-        )
 
-        buttons_per_row = 2
-        current_row = []
-        for i, product in enumerate(get, start=1):
-            current_row.append(KeyboardButton(text=f"{product[0]}"))
-            if i % buttons_per_row == 0 or i == len(get):
-                get_button.row(*current_row)
-                current_row = []
-        await message.answer('setlar', reply_markup=get_button)
-        await ProductStates.product.set()
+@dp.message_handler(text="Orqaga🔙")
+async def orqaga(message: types.Message):
+    await message.answer("Siz asosiy menudasiz  :", reply_markup=main_menu)
+
+
+@dp.message_handler(text="Setlar")
+async def set(message: types.Message):
+    get = cursor.execute('SELECT name FROM products').fetchall()
+
+    get_button = ReplyKeyboardMarkup(
+    )
+
+    buttons_per_row = 2
+    current_row = []
+    for i, product in enumerate(get, start=1):
+        current_row.append(KeyboardButton(text=f"{product[0]}"))
+        if i % buttons_per_row == 0 or i == len(get):
+            get_button.row(*current_row)
+            current_row = []
+    await message.answer('setlar', reply_markup=get_button)
+    await ProductStates.product.set()
+
+
+@dp.message_handler(text="Savat")
+async def save(message: types.Message):
+    savat = cursor.execute("SELECT * FROM savat WHERE user_id=?", (message.from_user.id,)).fetchall()
+    nomi = str(savat[0][2])
+    txt = ''
+    all = 0
+    for i in savat:
+        price = cursor.execute("SELECT * FROM products WHERE name=?", (i[2],)).fetchall()
+        print(price)
+        obshi_narxi = i[3] * price[0][2]
+        all += obshi_narxi
+        txt += f"""
+<b>Mahsulot nomi:</b>  <i>{i[2]}</i> 🍟
+<b>Mahsulot Soni:</b>   <i>{i[3]} </i>
+<b>Mahsulot Narxi:</b>  <i>{price[0][2]} </i>\n
+        """
+    txt += f'                                <b>Mahsulotlar narxi :</b> <i>{all}💸</i>'
+
+    await message.answer(txt)
 
 
 @dp.message_handler(content_types=types.ContentTypes.TEXT, state=ProductStates.product)
 async def text(message: types.Message, state: FSMContext):
     global i
-    await check_count(message.from_user.id)
+    global name
 
-    print(False)
+    await check_count(message.from_user.id)
 
     get = cursor.execute('SELECT * FROM products WHERE name=?', (message.text,)).fetchall()
 
     for i in get:
-        print(i)
+        print("s")
 
     image = i[0]
     name = i[1]
@@ -113,10 +138,6 @@ async def text(message: types.Message, state: FSMContext):
 async def inline_button(call: CallbackQuery, state: FSMContext):
     from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-
-
-
-
     if call.data == 'plus':
         cursor.execute('UPDATE counts SET count=count + 1 WHERE user_id=?', (call.message.chat.id,))
         connect.commit()
@@ -133,7 +154,8 @@ async def inline_button(call: CallbackQuery, state: FSMContext):
                 ]
             ],
         )
-        await bot.edit_message_reply_markup(chat_id=call.message.chat.id,reply_markup=product_inline,message_id=call.message.message_id)
+        await bot.edit_message_reply_markup(chat_id=call.message.chat.id, reply_markup=product_inline,
+                                            message_id=call.message.message_id)
 
 
 
@@ -155,6 +177,19 @@ async def inline_button(call: CallbackQuery, state: FSMContext):
         )
         await bot.edit_message_reply_markup(chat_id=call.message.chat.id, reply_markup=product_inline,
                                             message_id=call.message.message_id)
+    elif call.data == 'karzinka':
+        r = cursor.execute("SELECT * FROM counts WHERE user_id=?", (call.message.chat.id,))
+        for i in r:
+            print(i)
+        user_id = i[1]
+        count = i[2]
+
+        product = cursor.execute("SELECT * FROM products WHERE name=? ", (name,)).fetchall()
+        product_name = product[0][1]
+        product_price = product[0][2]
+        print(product)
+
+        add_in_savat(user_id, product_name, count)
 
 
 if __name__ == '__main__':
