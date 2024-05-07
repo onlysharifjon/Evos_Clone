@@ -1,9 +1,10 @@
 from aiogram import types, Bot, Dispatcher, executor
 import logging
-from state.states import UserStates, ProductStates
+from state.states import *
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 from aiogram.types import Contact, CallbackQuery
 
@@ -67,12 +68,16 @@ async def meni(message: types.Message):
 async def orqaga(message: types.Message):
     await message.answer("Siz asosiy menudasiz  :", reply_markup=main_menu)
 
-
 @dp.message_handler(text="Setlar")
 async def set(message: types.Message):
     get = cursor.execute('SELECT name FROM products').fetchall()
 
     get_button = ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text="Orqaga🔙")
+            ]
+        ]
     )
 
     buttons_per_row = 2
@@ -102,9 +107,9 @@ async def save(message: types.Message):
 <b>Mahsulot Soni:</b>   <i>{i[3]} </i>
 <b>Mahsulot Narxi:</b>  <i>{price[0][2]} </i>\n
         """
-    txt += f'                                <b>Mahsulotlar narxi :</b> <i>{all}💸</i>'
+    txt += f"                               <b>Mahsulotlar narxi :</b> <i>{all}so'm💸</i>"
 
-    await message.answer(txt)
+    await message.answer(txt, reply_markup=btn_in_savat)
 
 
 @dp.message_handler(content_types=types.ContentTypes.TEXT, state=ProductStates.product)
@@ -133,9 +138,8 @@ async def text(message: types.Message, state: FSMContext):
     # async def update_minuser(message: types.Message):
     #     pass
 
-
 @dp.callback_query_handler(state=ProductStates.product)
-async def inline_button(call: CallbackQuery, state: FSMContext):
+async def inline_button(call: CallbackQuery, state: FSMContext,):
     from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
     if call.data == 'plus':
@@ -190,6 +194,18 @@ async def inline_button(call: CallbackQuery, state: FSMContext):
         print(product)
 
         add_in_savat(user_id, product_name, count)
+
+        await call.answer("buyurtmangiz savatchaga🤵‍♂️ \nTuwdi uni qabul qilib oling✅/❌")
+
+
+
+@dp.message_handler(text="Atkaz❌")
+async def atkaz_products(message: types.Message):
+    cursor.execute("DELETE FROM savat WHERE user_id=?", (message.chat.id,))
+    await message.answer("Atkaz qilindi", reply_markup=main_menu)
+
+
+
 
 
 if __name__ == '__main__':

@@ -41,7 +41,8 @@ main_menu = ReplyKeyboardMarkup(
             KeyboardButton(text="✍️ Xabar Yuborish"),
             KeyboardButton(text="⚙️ Sozlamalar")
         ]
-    ]
+    ],
+    resize_keyboard=True,
 )
 
 
@@ -73,6 +74,17 @@ menu_2 = ReplyKeyboardMarkup(
         [
             KeyboardButton(text="Orqaga🔙")
         ]
-    ]
+    ],
+    resize_keyboard=True,
+)
+
+btn_in_savat = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="Qabul qilaman✅"),
+            KeyboardButton(text="Atkaz❌")
+        ]
+    ],
+    resize_keyboard=True,
 )
 
