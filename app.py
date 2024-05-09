@@ -5,12 +5,9 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-
 from aiogram.types import Contact, CallbackQuery
-
 from database import *
 from keyboards.default import *
-from keyboards.default import menu_2
 from database import cursor
 from keyboards.inline import *
 
@@ -18,6 +15,8 @@ logging.basicConfig(level=logging.INFO)
 API_TOKEN = "6836477622:AAG7yRCuh9OvfcydpbgOy7urLxJoPBX9sW8"
 bot = Bot(token=API_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot, storage=MemoryStorage())
+OSHXONA = 5172746353
+kurer = 259083453
 
 
 @dp.message_handler(commands="start")
@@ -64,20 +63,18 @@ async def meni(message: types.Message):
     await message.answer("Tanlang:", reply_markup=menu_2)
 
 
-@dp.message_handler(text="Orqaga🔙")
-async def orqaga(message: types.Message):
+@dp.message_handler(text="Orqaga🔙", state='*')
+async def orqaga(message: types.Message, state: FSMContext):
+    await state.finish()
     await message.answer("Siz asosiy menudasiz  :", reply_markup=main_menu)
+
 
 @dp.message_handler(text="Setlar")
 async def set(message: types.Message):
     get = cursor.execute('SELECT name FROM products').fetchall()
 
     get_button = ReplyKeyboardMarkup(
-        keyboard=[
-            [
-                KeyboardButton(text="Orqaga🔙")
-            ]
-        ]
+
     )
 
     buttons_per_row = 2
@@ -87,6 +84,7 @@ async def set(message: types.Message):
         if i % buttons_per_row == 0 or i == len(get):
             get_button.row(*current_row)
             current_row = []
+    get_button.add(KeyboardButton(text="Orqaga🔙"))
     await message.answer('setlar', reply_markup=get_button)
     await ProductStates.product.set()
 
@@ -138,8 +136,9 @@ async def text(message: types.Message, state: FSMContext):
     # async def update_minuser(message: types.Message):
     #     pass
 
+
 @dp.callback_query_handler(state=ProductStates.product)
-async def inline_button(call: CallbackQuery, state: FSMContext,):
+async def inline_button(call: CallbackQuery, state: FSMContext, ):
     from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
     if call.data == 'plus':
@@ -196,13 +195,60 @@ async def inline_button(call: CallbackQuery, state: FSMContext,):
         add_in_savat(user_id, product_name, count)
 
         await call.answer("buyurtmangiz savatchaga🤵‍♂️ \nTuwdi uni qabul qilib oling✅/❌")
-
+        await call.message.delete()
 
 
 @dp.message_handler(text="Atkaz❌")
 async def atkaz_products(message: types.Message):
     cursor.execute("DELETE FROM savat WHERE user_id=?", (message.chat.id,))
     await message.answer("Atkaz qilindi", reply_markup=main_menu)
+
+
+@dp.message_handler(text="Qabul qilaman✅")
+async def qilindi_products(message: types.Message):
+    product = cursor.execute("SELECT * FROM savat WHERE user_id=? ", (message.from_user.id,)).fetchall()
+    all_text = ''
+    for i in product:
+        all_text += f"🍟{i[2]}\n🔢Soni: {i[3]}\n\n"
+    inlne_sender = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Tayyor", callback_data=f"{message.from_user.id}"),
+            ]
+        ]
+    )
+    await bot.send_message(OSHXONA, all_text, reply_markup=inlne_sender)
+
+
+@dp.callback_query_handler()
+async def cook(call: types.CallbackQuery):
+    try:
+        print(True)
+        if call.message.chat.id == OSHXONA:
+            product = cursor.execute("SELECT * FROM savat WHERE user_id=? ", (call.message.chat.id,)).fetchall()
+            all_text = ''
+            for i in product:
+                all_text += f"🍟{i[2]}\n🔢Soni: {i[3]}\n\n"
+                await buyurtmalar_tarixi(int(call.data), i[2], i[3])
+            connect.commit()
+            cursor.execute('DELETE FROM savat WHERE user_id=?', (int(call.data),))
+            connect.commit()
+            await bot.send_message(chat_id=int(call.data),
+                                   text=f'{all_text}\nBuyurtmangizni yetkazish uchun kuryer yo`lga chiqdi')
+
+            kurer_inline = InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [
+                        InlineKeyboardButton(text="Yetkazib berdim", callback_data=f"{call.message.chat.id}"),
+                    ]
+                ]
+            )
+            await bot.send_message(kurer, f'{all_text} - Sizga buyurtma berildi🚚\n\n Yolga otlaning\n')
+
+    except:
+        await bot.send_message(OSHXONA,'QANDAYDIR XATOLIK !')
+
+
 
 
 
