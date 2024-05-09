@@ -9,3 +9,7 @@ class UserStates(StatesGroup):
 
 class ProductStates(StatesGroup):
     product = State()
+
+
+class ballStates(StatesGroup):
+    ball = State()

@@ -86,5 +86,6 @@ btn_in_savat = ReplyKeyboardMarkup(
         ]
     ],
     resize_keyboard=True,
+    one_time_keyboard=True
 )
 

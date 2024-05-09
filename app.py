@@ -12,11 +12,11 @@ from database import cursor
 from keyboards.inline import *
 
 logging.basicConfig(level=logging.INFO)
-API_TOKEN = "6836477622:AAG7yRCuh9OvfcydpbgOy7urLxJoPBX9sW8"
+API_TOKEN = "6809313060:AAGNE1_ahY5Dt9DMDhU34SgwznJZoH7qc6c"
 bot = Bot(token=API_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot, storage=MemoryStorage())
-OSHXONA = 5172746353
-kurer = 259083453
+OSHXONA = 259083453
+kurer = 5172746353
 
 
 @dp.message_handler(commands="start")
@@ -222,37 +222,83 @@ async def qilindi_products(message: types.Message):
 
 @dp.callback_query_handler()
 async def cook(call: types.CallbackQuery):
-    try:
-        print(True)
-        if call.message.chat.id == OSHXONA:
-            product = cursor.execute("SELECT * FROM savat WHERE user_id=? ", (call.message.chat.id,)).fetchall()
-            all_text = ''
-            for i in product:
-                all_text += f"🍟{i[2]}\n🔢Soni: {i[3]}\n\n"
-                await buyurtmalar_tarixi(int(call.data), i[2], i[3])
-            connect.commit()
-            cursor.execute('DELETE FROM savat WHERE user_id=?', (int(call.data),))
-            connect.commit()
-            await bot.send_message(chat_id=int(call.data),
-                                   text=f'{all_text}\nBuyurtmangizni yetkazish uchun kuryer yo`lga chiqdi')
+    global d
+    if call.message.chat.id == OSHXONA:
+        print("Oshxona ishladi")
+        product = cursor.execute("SELECT * FROM savat WHERE user_id=?", (call.message.chat.id,)).fetchall()
+        all_text = ''
+        button_data = []  # Store the necessary data for each button
 
-            kurer_inline = InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(text="Yetkazib berdim", callback_data=f"{call.message.chat.id}"),
-                    ]
+        for i in product:
+            print(i)
+            all_text += f"🍟{i[2]}\n🔢Soni: {i[3]}\n\n"
+            await buyurtmalar_tarixi(int(call.data), i[2], i[3])
+            connect.commit()
+            button_data.append((i[1], i[2]))  # Store data for callback
+
+        cursor.execute('DELETE FROM savat WHERE user_id=?', (str(call.data),))
+        connect.commit()
+
+        await bot.send_message(call.data,
+                               text=f'{all_text}\nBuyurtmangizni yetkazish uchun kuryer yo`lga chiqdi')
+        await call.message.delete()
+
+        kurer_inline = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="Yetkazib berdim", callback_data=f"{call.data}")  # Use stored data
                 ]
-            )
-            await bot.send_message(kurer, f'{all_text} - Sizga buyurtma berildi🚚\n\n Yolga otlaning\n')
+            ]
+        )
+        await bot.send_message(kurer, f'{all_text} - Sizga buyurtma berildi🚚\n\n Yolga otlaning\n',
+                               reply_markup=kurer_inline)
 
-    except:
-        await bot.send_message(OSHXONA,'QANDAYDIR XATOLIK !')
+    elif call.message.chat.id == kurer:
+        print("Kuryer ishladi")
+        product = cursor.execute("SELECT * FROM savat WHERE user_id=?", (call.message.chat.id,)).fetchall()
+        for d in product:
+            print(d)
+        connect.commit()
+        await bot.send_message(chat_id=int(OSHXONA), text="Buyurtmangiz Yetkazildi !\n\nYetkazib berish hizmatimizni baholang🪙", reply_markup=ball_inline)
+        await ballStates.ball.set()
 
 
+@dp.callback_query_handler(state=ballStates.ball)
+async def ball_for_delivery(call: types.CallbackQuery, state: FSMContext):
+    if call.data == "1":
+        await call.message.delete()
+        await bot.send_photo(kurer , open("uploads/evos/1.png", 'rb'),
+                             caption=f"Foydalanvuchi sizni baholadi 😋",
+                             )
+        await state.finish()
 
 
+    elif call.data == "2":
+        await call.message.delete()
+        await bot.send_photo(kurer , open("uploads/evos/2.png", 'rb'),
+                             caption=f"Foydalanvuchi sizni baholadi 😋",
+                             )
+        await state.finish()
 
 
+    elif call.data == "3":
+        await call.message.delete()
+        await bot.send_photo(kurer , open("uploads/evos/3.png", 'rb'),
+                             caption=f"Foydalanvuchi sizni baholadi 😋",)
+        await state.finish()
 
+
+    elif call.data == "4":
+        await call.message.delete()
+        await bot.send_photo(kurer , open("uploads/evos/4.png", 'rb'),
+                             caption=f"Foydalanvuchi sizni baholadi 😋",)
+        await state.finish()
+
+
+    elif call.data == "5":
+        await call.message.delete()
+        await bot.send_photo(kurer , open("uploads/evos/5.png", 'rb'),
+                             caption=f"Foydalanvuchi sizni baholadi 😋",)
+        await state.finish()
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
