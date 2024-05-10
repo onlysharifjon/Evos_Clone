@@ -17,8 +17,7 @@ bot = Bot(token=API_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot, storage=MemoryStorage())
 OSHXONA = 259083453
 kurer = 5172746353
-
-
+    
 @dp.message_handler(commands="start")
 async def start(message: types.Message):
     user_id = message.from_user.id
@@ -259,7 +258,9 @@ async def cook(call: types.CallbackQuery):
         for d in product:
             print(d)
         connect.commit()
-        await bot.send_message(chat_id=int(OSHXONA), text="Buyurtmangiz Yetkazildi !\n\nYetkazib berish hizmatimizni baholang🪙", reply_markup=ball_inline)
+        await bot.send_message(chat_id=int(OSHXONA), text="<b>🍕Buyurtmangiz Yetkazildi !</b>⚜️\n\n<i>Yetkazib berish hizmatimizni baholang🪙</i>", reply_markup=ball_inline)
+        await bot.send_message(kurer, "<i>Tavar Muvofaqiyatli qabul qilib olindi🍕</i>")
+        await call.message.delete()
         await ballStates.ball.set()
 
 
@@ -267,16 +268,16 @@ async def cook(call: types.CallbackQuery):
 async def ball_for_delivery(call: types.CallbackQuery, state: FSMContext):
     if call.data == "1":
         await call.message.delete()
-        await bot.send_photo(kurer , open("uploads/evos/1.png", 'rb'),
-                             caption=f"Foydalanvuchi sizni baholadi 😋",
+        await bot.send_photo(kurer , open("uploads/evos/5.png", 'rb'),
+                             caption=f"Foydalanvuchi sizni baholadi 🤬",
                              )
         await state.finish()
 
 
     elif call.data == "2":
         await call.message.delete()
-        await bot.send_photo(kurer , open("uploads/evos/2.png", 'rb'),
-                             caption=f"Foydalanvuchi sizni baholadi 😋",
+        await bot.send_photo(kurer , open("uploads/evos/4.png", 'rb'),
+                             caption=f"Foydalanvuchi sizni baholadi 😭",
                              )
         await state.finish()
 
@@ -284,21 +285,21 @@ async def ball_for_delivery(call: types.CallbackQuery, state: FSMContext):
     elif call.data == "3":
         await call.message.delete()
         await bot.send_photo(kurer , open("uploads/evos/3.png", 'rb'),
-                             caption=f"Foydalanvuchi sizni baholadi 😋",)
+                             caption=f"Foydalanvuchi sizni baholadi 😮‍💨",)
         await state.finish()
 
 
     elif call.data == "4":
         await call.message.delete()
-        await bot.send_photo(kurer , open("uploads/evos/4.png", 'rb'),
-                             caption=f"Foydalanvuchi sizni baholadi 😋",)
+        await bot.send_photo(kurer , open("uploads/evos/2.png", 'rb'),
+                             caption=f"Foydalanvuchi sizni baholadi 👍🏻",)
         await state.finish()
 
 
     elif call.data == "5":
         await call.message.delete()
-        await bot.send_photo(kurer , open("uploads/evos/5.png", 'rb'),
-                             caption=f"Foydalanvuchi sizni baholadi 😋",)
+        await bot.send_photo(kurer , open("uploads/evos/1.png", 'rb'),
+                             caption=f"Foydalanvuchi sizni baholadi 😋🍕",)
         await state.finish()
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
